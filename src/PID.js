@@ -46,10 +46,10 @@ export class PID {
         console.log(error, this.proportional, this.integral, this.derivative, output)
 
 
-        if (output > this.output.max) {
-            output = this.output.max;
-        } else if (output < this.output.min) {
-            output = this.output.min;
+        if (output > this.output.max / this.time) {
+            output = this.output.max / this.time;
+        } else if (output < this.output.min / this.time) {
+            output = this.output.min / this.time;
         }
         return output;
     }
@@ -68,5 +68,17 @@ export class PID {
 
     getDerivative() {
         return this.derivative;
+    }
+
+    setKP(kP) {
+        this.kP = kP;
+    }
+
+    setKI(kI) {
+        this.kI = kI;
+    }
+
+    setKD(kD) {
+        this.kD = kD;
     }
 }

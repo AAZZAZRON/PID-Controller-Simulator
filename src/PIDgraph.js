@@ -4,7 +4,7 @@ import Chart from 'chart.js/auto';
 export class PIDGraph {
     constructor() {
         this.graph = document.getElementById('graph');
-        this.POINTS = 10; // number of points to show on graph
+        this.POINTS = 50; // number of points to show on graph
         this.numPoints = 0; // tmp not required   
 
         this.data = {
@@ -99,8 +99,11 @@ export class PIDGraph {
 
 
     reset() { // create new graph
-        this.chart.destroy();
-        this.init();
+        this.chart.data.labels = [];
+        this.chart.data.datasets.forEach((dataset) => {
+            dataset.data = [];
+        });
+        this.chart.update('none');
     }
 
 

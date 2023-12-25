@@ -10,7 +10,7 @@ const kPInput = document.getElementById('kp');
 const kIInput = document.getElementById('ki');
 const kDInput = document.getElementById('kd');
 
-const TIME_INTERVAL = 200; // in ms
+const TIME_INTERVAL = 1000; // in ms
 const pid = new PID(0, 0, 0, 0, TIME_INTERVAL);
 const graph = new PIDGraph();
 
@@ -19,9 +19,9 @@ startButton.addEventListener('click', () => {
     changeButton.disabled = false;
     stopButton.disabled = false;
     setPoint.disabled = false;
-    kPInput.disabled = true;
-    kIInput.disabled = true;
-    kDInput.disabled = true;
+    // kPInput.disabled = true;
+    // kIInput.disabled = true;
+    // kDInput.disabled = true;
     start(Number(kPInput.value), Number(kIInput.value), Number(kDInput.value));
 });
 
@@ -44,10 +44,17 @@ document.getElementById('add').addEventListener('click', () => {
     graph.addData(graph.generateData());
 });
 
+function gaussianNoise(mean, stdDev) {
+    let u = 0, v = 0;
+    while(u === 0) u = Math.random(); // Converting [0,1) to (0,1)
+    while(v === 0) v = Math.random();
+    return mean + (Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v)) * stdDev;
+}
+
 function start(kP, kI, kD) {
-    return;
     pid.reset(Number(setPoint.value), kP, kI, kD, TIME_INTERVAL);
     graph.reset();
+    console.log(graph);
     let time = 0;
 
     let motor = 0; // current motor speed
@@ -64,7 +71,8 @@ function start(kP, kI, kD) {
     let interval = setInterval(() => {
 
         let change = pid.run(motor);
-        motor += change;
+        // noise be a random number from -5 to 5
+        motor += change + gaussianNoise(0, 1);
 
         graph.addData({
             setPoint: pid.getSetPoint(),
@@ -93,6 +101,16 @@ kDInput.addEventListener('change', () => {
     updateGraph();
 });
 
+// kPInput.addEventListener('change', () => {
+//     pid.setKP(Number(kPInput.value));
+// });
+// kIInput.addEventListener('change', () => {
+//     pid.setKI(Number(kIInput.value));
+// });
+// kDInput.addEventListener('change', () => {
+//     pid.setKD(Number(kDInput.value));
+// });
+
 function updateGraph() {
     console.log("update");
     pid.reset(Number(setPoint.value), Number(kPInput.value), Number(kIInput.value), Number(kDInput.value), TIME_INTERVAL);
@@ -118,7 +136,7 @@ function updateGraph() {
         });
 
         let change = pid.run(motor);
-        motor += change;
+        motor += change + gaussianNoise(0, 1);
     }
     console.log(graph);
 }
