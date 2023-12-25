@@ -1,118 +1,122 @@
 import Chart from 'chart.js/auto';
 
-const graph = document.getElementById('graph');
-const POINTS = 50; // number of points to show on graph
-var numPoints = 0; // tmp not required
 
-/*
-    Data format:
-    {
-        setPoint: 15,
-        proportional: 15,
-        integral: 15,
-        derivative: 15,
-        time: 2,
-    }
-*/
-function generateData() { // for testing
-    // generate number from 1-50
-    return {
-        setPoint: Math.floor(Math.random() * 50) + 1,
-        proportional: Math.floor(Math.random() * 50) + 1,
-        integral: Math.floor(Math.random() * 50) + 1,
-        derivative: Math.floor(Math.random() * 50) + 1,
-        time: ++numPoints,
-    }
-}
+export class PIDGraph {
+    constructor() {
+        this.graph = document.getElementById('graph');
+        this.POINTS = 50; // number of points to show on graph
+        this.numPoints = 0; // tmp not required   
 
+        this.data = {
+            labels: [],
+            datasets: [
+                {
+                    label: 'Set Point',
+                    id: 'setPoint',
+                    // data: PIDdata.map(row => row.setPoint),
+                    stepped: true,
+                },
+                {
+                    label: 'Proportional',
+                    id: 'proportional',
+                    // data: PIDdata.map(row => row.proportional)
+                },
+                {
+                    label: 'Integral',
+                    id: 'integral',
+                    // data: PIDdata.map(row => row.integral)
+                },
+                {
+                    label: 'Derivative',
+                    id: 'derivative',
+                    // data: PIDdata.map(row => row.derivative)
+                },
+                {
+                    label: 'Motor',
+                    id: 'motor',
+                    // data: PIDdata.map(row => row.motor)
+                },
+            ]
+        };
 
-const data = {
-    labels: [],
-    datasets: [
-        {
-            label: 'Set Point',
-            id: 'setPoint',
-            // data: PIDdata.map(row => row.setPoint),
-            stepped: true,
-        },
-        {
-            label: 'Proportional',
-            id: 'proportional',
-            // data: PIDdata.map(row => row.proportional)
-        },
-        {
-            label: 'Integral',
-            id: 'integral',
-            // data: PIDdata.map(row => row.integral)
-        },
-        {
-            label: 'Derivative',
-            id: 'derivative',
-            // data: PIDdata.map(row => row.derivative)
-        },
-        {
-            label: 'Motor',
-            id: 'motor',
-            // data: PIDdata.map(row => row.motor)
-        },
-    ]
-};
-
-
-const config = {
-    type: 'line',
-    data: data,
-    options: {
-        responsive: true,
-        events: [],
-        scales: {
-            x: {
-                // display: false
-            }
-        },
-        plugins: {
-            legend: {
-                position: 'top',
-            },
-            title: {
-                display: true,
-                text: 'PID Controller Graph'
+        this.config = {
+            type: 'line',
+            data: this.data,
+            options: {
+                responsive: true,
+                events: [],
+                scales: {
+                    x: {
+                        // display: false
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'PID Controller Graph'
+                    }
+                }
             }
         }
-    }
-}
 
-const chart = new Chart(
-    graph, 
-    config,
-);
-
-
-
-export default function addData(data) {
-    // data = generateData();
-    chart.data.labels.push(data.time);
-    chart.data.datasets.forEach((dataset) => {
-        dataset.data.push(data[dataset.id]);
-    });
-    
-    if (chart.data.labels.length >= POINTS) {
-        shiftRight();
+        this.init();
     }
 
-    chart.update('none');
+    /*
+        Data format:
+        {
+            setPoint: 15,
+            proportional: 15,
+            integral: 15,
+            derivative: 15,
+            time: 2,
+        }
+    */
+    generateData() { // for testing
+        // generate number from 1-50
+        return {
+            setPoint: Math.floor(Math.random() * 50) + 1,
+            proportional: Math.floor(Math.random() * 50) + 1,
+            integral: Math.floor(Math.random() * 50) + 1,
+            derivative: Math.floor(Math.random() * 50) + 1,
+            time: ++this.numPoints,
+        }
+    }
+
+    init() {
+        this.chart = new Chart(
+            this.graph, 
+            this.config,
+        );
+    }
+    reset() { // create new graph
+        this.chart.reset();
+    }
+
+
+
+    addData(data) {
+        // data = generateData();
+        this.chart.data.labels.push(data.time);
+        this.chart.data.datasets.forEach((dataset) => {
+            dataset.data.push(data[dataset.id]);
+        });
+        
+        if (this.chart.data.labels.length >= this.POINTS) {
+            this.shiftRight();
+        }
+
+        this.chart.update('none');
+    }
+
+    shiftRight() {
+        this.chart.data.labels.shift();
+        this.chart.data.datasets.forEach((dataset) => {
+            dataset.data.shift();
+        });
+        this.chart.update('none');
+    }
 }
-
-function shiftRight() {
-    chart.data.labels.shift();
-    chart.data.datasets.forEach((dataset) => {
-        dataset.data.shift();
-    });
-    chart.update('none');
-}
-
-document.getElementById('add').addEventListener('click', () => {
-    addData(generateData());
-});
-
-

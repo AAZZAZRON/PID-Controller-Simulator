@@ -1,4 +1,4 @@
-import addData from './PIDgraph.js';
+import {PIDGraph} from './PIDgraph.js';
 import {PID} from './PID.js';
 
 // init
@@ -12,6 +12,7 @@ const kDInput = document.getElementById('kd');
 
 const TIME_INTERVAL = 200; // in ms
 const pid = new PID(0, 0, 0, 0, TIME_INTERVAL);
+const graph = new PIDGraph();
 
 startButton.addEventListener('click', () => {
     startButton.disabled = true;
@@ -39,13 +40,18 @@ changeButton.addEventListener('click', () => {
     pid.changeSetPoint(Number(setPoint.value));
 });
 
+document.getElementById('add').addEventListener('click', () => {
+    graph.addData(graph.generateData());
+});
+
 function start(kP, kI, kD) {
     pid.reset(Number(setPoint.value), kP, kI, kD, TIME_INTERVAL);
+    graph.reset();
     let time = 0;
 
     let motor = 0; // current motor speed
 
-    addData({
+    graph.addData({
         setPoint: pid.getSetPoint(),
         proportional: pid.getProportional(),
         integral: pid.getIntegral(),
@@ -59,7 +65,7 @@ function start(kP, kI, kD) {
         change = pid.run(motor);
         motor += change;
 
-        addData({
+        graph.addData({
             setPoint: pid.getSetPoint(),
             proportional: pid.getProportional(),
             integral: pid.getIntegral(),
@@ -71,5 +77,7 @@ function start(kP, kI, kD) {
         time += TIME_INTERVAL;
     }, TIME_INTERVAL);
 
-    
+    document.getElementById('stop').addEventListener('click', () => {
+        clearInterval(interval);
+    });
 }
