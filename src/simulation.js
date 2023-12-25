@@ -45,6 +45,7 @@ document.getElementById('add').addEventListener('click', () => {
 });
 
 function start(kP, kI, kD) {
+    return;
     pid.reset(Number(setPoint.value), kP, kI, kD, TIME_INTERVAL);
     graph.reset();
     let time = 0;
@@ -62,7 +63,7 @@ function start(kP, kI, kD) {
 
     let interval = setInterval(() => {
 
-        change = pid.run(motor);
+        let change = pid.run(motor);
         motor += change;
 
         graph.addData({
@@ -80,4 +81,44 @@ function start(kP, kI, kD) {
     document.getElementById('stop').addEventListener('click', () => {
         clearInterval(interval);
     });
+}
+
+kPInput.addEventListener('change', () => {
+    updateGraph();
+});
+kIInput.addEventListener('change', () => {
+    updateGraph();
+});
+kDInput.addEventListener('change', () => {
+    updateGraph();
+});
+
+function updateGraph() {
+    console.log("update");
+    pid.reset(Number(setPoint.value), Number(kPInput.value), Number(kIInput.value), Number(kDInput.value), TIME_INTERVAL);
+    graph.reset();
+    let motor = 0;
+
+    for (let time = 0; time < graph.POINTS; time++) {
+        graph.addData({
+            setPoint: time < 1 ? 0 : pid.getSetPoint(),
+            proportional: pid.getProportional(),
+            integral: pid.getIntegral(),
+            derivative: pid.getDerivative(),
+            motor: motor,
+            time: time,
+        });
+        console.log({
+            setPoint: time < 1 ? 0 : pid.getSetPoint(),
+            proportional: pid.getProportional(),
+            integral: pid.getIntegral(),
+            derivative: pid.getDerivative(),
+            motor: motor,
+            time: time,
+        });
+
+        let change = pid.run(motor);
+        motor += change;
+    }
+    console.log(graph);
 }

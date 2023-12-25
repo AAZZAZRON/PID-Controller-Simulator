@@ -4,7 +4,7 @@ import Chart from 'chart.js/auto';
 export class PIDGraph {
     constructor() {
         this.graph = document.getElementById('graph');
-        this.POINTS = 50; // number of points to show on graph
+        this.POINTS = 10; // number of points to show on graph
         this.numPoints = 0; // tmp not required   
 
         this.data = {
@@ -20,21 +20,25 @@ export class PIDGraph {
                     label: 'Proportional',
                     id: 'proportional',
                     // data: PIDdata.map(row => row.proportional)
+                    tension: 0.5,
                 },
                 {
                     label: 'Integral',
                     id: 'integral',
                     // data: PIDdata.map(row => row.integral)
+                    tension: 0.5,
                 },
                 {
                     label: 'Derivative',
                     id: 'derivative',
                     // data: PIDdata.map(row => row.derivative)
+                    tension: 0.5,
                 },
                 {
                     label: 'Motor',
                     id: 'motor',
                     // data: PIDdata.map(row => row.motor)
+                    tension: 0.5,
                 },
             ]
         };
@@ -92,8 +96,11 @@ export class PIDGraph {
             this.config,
         );
     }
+
+
     reset() { // create new graph
-        this.chart.reset();
+        this.chart.destroy();
+        this.init();
     }
 
 
@@ -105,7 +112,7 @@ export class PIDGraph {
             dataset.data.push(data[dataset.id]);
         });
         
-        if (this.chart.data.labels.length >= this.POINTS) {
+        if (this.chart.data.labels.length > this.POINTS) {
             this.shiftRight();
         }
 
