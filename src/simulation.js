@@ -1,5 +1,6 @@
 import {PIDGraph} from './PIDgraph.js';
 import {PID} from './PID.js';
+import { Motor } from './motor.js';
 
 // init
 const startButton = document.getElementById('start');
@@ -13,6 +14,8 @@ const kDInput = document.getElementById('kd');
 const TIME_INTERVAL = 1000; // in ms
 const pid = new PID(0, 0, 0, 0, TIME_INTERVAL);
 const graph = new PIDGraph();
+const motor = new Motor(TIME_INTERVAL);
+
 
 startButton.addEventListener('click', () => {
     startButton.disabled = true;
@@ -44,20 +47,14 @@ document.getElementById('add').addEventListener('click', () => {
     graph.addData(graph.generateData());
 });
 
-function gaussianNoise(mean, stdDev) {
-    let u = 0, v = 0;
-    while(u === 0) u = Math.random(); // Converting [0,1) to (0,1)
-    while(v === 0) v = Math.random();
-    return mean + (Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v)) * stdDev;
-}
-
 function start(kP, kI, kD) {
+    return;
     pid.reset(Number(setPoint.value), kP, kI, kD, TIME_INTERVAL);
     graph.reset();
     console.log(graph);
     let time = 0;
 
-    let motor = 0; // current motor speed
+    motor.reset();
 
     graph.addData({
         setPoint: pid.getSetPoint(),
@@ -115,7 +112,7 @@ function updateGraph() {
     console.log("update");
     pid.reset(Number(setPoint.value), Number(kPInput.value), Number(kIInput.value), Number(kDInput.value), TIME_INTERVAL);
     graph.reset();
-    let motor = 0;
+    motor.reset();
 
     for (let time = 0; time < graph.POINTS; time++) {
         graph.addData({
@@ -123,20 +120,12 @@ function updateGraph() {
             proportional: pid.getProportional(),
             integral: pid.getIntegral(),
             derivative: pid.getDerivative(),
-            motor: motor,
-            time: time,
-        });
-        console.log({
-            setPoint: time < 1 ? 0 : pid.getSetPoint(),
-            proportional: pid.getProportional(),
-            integral: pid.getIntegral(),
-            derivative: pid.getDerivative(),
-            motor: motor,
+            motor: motor.speed,
             time: time,
         });
 
-        let change = pid.run(motor);
-        motor += change + gaussianNoise(0, 1);
+        let change = pid.run(motor.speed);
+        motor.applyInput(change);
     }
     console.log(graph);
 }

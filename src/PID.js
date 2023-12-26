@@ -1,11 +1,8 @@
 export class PID {
-    output = {
-        min: -1000,
-        max: 1000,
-    }
     previousError = 0;
     proportional = 0;
     integral = 0;
+    integralMax = 1000;
     derivative = 0;
     constructor(target, kP, kI, kD, time) {
         this.target = target;
@@ -37,20 +34,21 @@ export class PID {
 
         this.proportional = this.kP * error;
         this.integral += this.kI * error * this.time;
+
+        if (this.integral > this.integralMax / this.time) {
+            this.integral = this.integralMax / this.time;
+        } else if (this.integral < -this.integralMax / this.time) {
+            this.integral = -this.integralMax / this.time;
+        }
+
         this.derivative = this.kD * (error - this.previousError) / this.time;
 
         this.previousError = error;
 
         let output = this.proportional + this.integral + this.derivative;
-        console.log(pv);
-        console.log(error, this.proportional, this.integral, this.derivative, output)
+        // console.log(pv);
+        // console.log(error, this.proportional, this.integral, this.derivative, output)
 
-
-        if (output > this.output.max / this.time) {
-            output = this.output.max / this.time;
-        } else if (output < this.output.min / this.time) {
-            output = this.output.min / this.time;
-        }
         return output;
     }
 
