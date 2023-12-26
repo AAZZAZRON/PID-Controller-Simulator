@@ -1,5 +1,5 @@
-import {PIDGraph} from './PIDgraph.js';
-import {PID} from './PID.js';
+import { PIDGraph } from './PIDgraph.js';
+import { PID } from './PID.js';
 import { Motor } from './motor.js';
 
 // init
@@ -15,6 +15,7 @@ const TIME_INTERVAL = 1000; // in ms
 const pid = new PID(0, 0, 0, 0, TIME_INTERVAL);
 const graph = new PIDGraph();
 const motor = new Motor(TIME_INTERVAL);
+var isSimulating = 0;
 
 
 startButton.addEventListener('click', () => {
@@ -25,7 +26,7 @@ startButton.addEventListener('click', () => {
     // kPInput.disabled = true;
     // kIInput.disabled = true;
     // kDInput.disabled = true;
-    start(Number(kPInput.value), Number(kIInput.value), Number(kDInput.value));
+    startSimulation();
 });
 
 stopButton.addEventListener('click', () => {
@@ -36,7 +37,7 @@ stopButton.addEventListener('click', () => {
     kPInput.disabled = false;
     kIInput.disabled = false;
     kDInput.disabled = false;
-    stop();
+    // stop();
 });
 
 changeButton.addEventListener('click', () => {
@@ -47,36 +48,36 @@ document.getElementById('add').addEventListener('click', () => {
     graph.addData(graph.generateData());
 });
 
-function start(kP, kI, kD) {
-    return;
-    pid.reset(Number(setPoint.value), kP, kI, kD, TIME_INTERVAL);
+function startSimulation() {
+    isSimulating = 1;
+    pid.reset(Number(setPoint.value), Number(kPInput.value), Number(kIInput.value), Number(kDInput.value), TIME_INTERVAL);
     graph.reset();
-    console.log(graph);
-    let time = 0;
-
     motor.reset();
 
-    graph.addData({
-        setPoint: pid.getSetPoint(),
+    console.log(graph);
+
+    let time = 0;
+
+    graph.addData({ // initial point
+        setPoint: 0,
         proportional: pid.getProportional(),
         integral: pid.getIntegral(),
         derivative: pid.getDerivative(),
-        motor: motor,
+        motor: motor.speed,
         time: time,
     });
 
     let interval = setInterval(() => {
 
-        let change = pid.run(motor);
-        // noise be a random number from -5 to 5
-        motor += change + gaussianNoise(0, 1);
+        let change = pid.run(motor.speed);
+        motor.applyChange(change);
 
         graph.addData({
             setPoint: pid.getSetPoint(),
             proportional: pid.getProportional(),
             integral: pid.getIntegral(),
             derivative: pid.getDerivative(),
-            motor: motor,
+            motor: motor.speed,
             time: time,
         });
 
@@ -85,28 +86,23 @@ function start(kP, kI, kD) {
 
     document.getElementById('stop').addEventListener('click', () => {
         clearInterval(interval);
+        isSimulating = 0;
     });
 }
 
 kPInput.addEventListener('change', () => {
-    updateGraph();
+    if (isSimulating) pid.setKP(Number(kPInput.value));
+    else updateGraph();
 });
 kIInput.addEventListener('change', () => {
-    updateGraph();
+    if (isSimulating) pid.setKI(Number(kIInput.value));
+    else updateGraph();
 });
 kDInput.addEventListener('change', () => {
-    updateGraph();
+    if (isSimulating) pid.setKD(Number(kDInput.value));
+    else updateGraph();
 });
 
-// kPInput.addEventListener('change', () => {
-//     pid.setKP(Number(kPInput.value));
-// });
-// kIInput.addEventListener('change', () => {
-//     pid.setKI(Number(kIInput.value));
-// });
-// kDInput.addEventListener('change', () => {
-//     pid.setKD(Number(kDInput.value));
-// });
 
 function updateGraph() {
     console.log("update");
@@ -125,7 +121,7 @@ function updateGraph() {
         });
 
         let change = pid.run(motor.speed);
-        motor.applyInput(change);
+        motor.applyChange(change);
     }
     console.log(graph);
 }

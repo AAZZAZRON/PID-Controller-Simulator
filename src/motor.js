@@ -9,13 +9,13 @@ export class Motor {
         this.speed = 0;
     }
 
-    applyInput(input) {
-        if (input > this.maxSpeed) {
-            input = this.maxSpeed;
-        } else if (input < -this.maxSpeed) {
-            input = -this.maxSpeed;
+    applyChange(change) {
+        if (change > this.maxSpeed) {
+            change = this.maxSpeed;
+        } else if (change < -this.maxSpeed) {
+            change = -this.maxSpeed;
         }
-        this.speed += input;
+        this.speed += change;
         this.speed += this.gaussianNoise(0, 1);
     }
 
