@@ -17,6 +17,8 @@ const graph = new PIDGraph();
 const motor = new Motor(TIME_INTERVAL);
 var isSimulating = 0;
 
+updateGraph(); // initial graph
+
 
 startButton.addEventListener('click', () => {
     startButton.disabled = true;
